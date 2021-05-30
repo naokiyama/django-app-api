@@ -38,8 +38,22 @@ class UserAdminModelTests(TestCase):
         )
 
     def test_user_listed(self):
+        # adminのリスト表示ページのurlを返す
         url = reverse('admin:core_user_changelist')
+        print(url)
         res = self.client.get(url)
 
         self.assertContains(res, self.admin_user.username)
         self.assertContains(res, self.admin_user.email)
+
+    def test_user_edit(self):
+        # admin model userの編集ページを返すs
+        url = reverse('admin:core_user_change', args=[self.user.id])
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
+
+    def test_user_add(self):
+        # admin model userの追加ページを返す
+        url = reverse('admin:core_user_add')
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
