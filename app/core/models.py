@@ -37,7 +37,7 @@ class UserManager(BaseUserManager):
             first_name,
             last_name,
             username,
-            phone_number,
+            phone_number=phone_number,
             email=email,
             password=password,
         )
@@ -54,18 +54,19 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=25)
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(max_length=100, unique=True)
-    phone_number = models.CharField(max_length=12)
+    phone_number = models.CharField(max_length=8)
 
     # required
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'username']
+    REQUIRED_FIELDS = ['first_name', 'last_name',
+                       'username', 'phone_number']
 
     objects = UserManager()
 

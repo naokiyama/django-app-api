@@ -8,7 +8,7 @@ class UserAdmin(BaseUserAdmin):
     ordering = ['created_at']
     # listフィールド用のフィールドセット
     list_display = ['first_name', 'last_name',
-                    'username', 'phone_number', 'email']
+                    'username', 'phone_number', 'email', 'is_active']
     # フィールドセットを使用することでadmin表示分割する
     # edit用のフィールドセット
     fieldsets = (
@@ -26,7 +26,7 @@ class UserAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2',)
+            'fields': ('phone_number', 'email', 'password1', 'password2',)
         }),
     )
 
