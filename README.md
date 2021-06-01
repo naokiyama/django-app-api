@@ -1,2 +1,2 @@
-# django-app-api
-Django api source code
+# django-app-api-TDD
+Django test driven development
