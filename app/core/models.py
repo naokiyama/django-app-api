@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, \
     PermissionsMixin
+from app import settings
 # Create your models here.
 
 # usermodelにはセキュリティを高めるためにuuidの使用を検討する
@@ -79,3 +80,13 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
+class Tag(models.Model):
+    """Tag to be used for a recipe"""
+    name = models.CharField(max_length=50)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
