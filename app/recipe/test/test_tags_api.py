@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from core.models import Tag, Ingredient
+from core.models import Tag
 
 from recipe.serializers import TagSerializer
 

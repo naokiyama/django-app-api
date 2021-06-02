@@ -13,8 +13,10 @@ def sample_user(
         email="test@example.com",
         password="test1234"):
     # crete sample user
-    return get_user_model().objects.create_user(first_name, last_name,
-                                                username, phone_number, email, password)
+    return get_user_model().objects.create_user(
+        first_name, last_name,
+        username, phone_number,
+        email, password)
 
 
 class UserModel(TestCase):
