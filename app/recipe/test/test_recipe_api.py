@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+import decimal
 
 
 from rest_framework import status
@@ -20,7 +21,7 @@ def sample_tag(user, name='Main course'):
     """Create and return a sample tag"""
     return Tag.objects.create(user=user, name=name)
 
-def sample_Ingredient(user, name='Cinnamon'):
+def sample_ingredient(user, name='Cinnamon'):
     """Create and return a sample ingredient"""
     return Ingredient.objects.create(user=user, name=name)
     
@@ -85,13 +86,63 @@ class PrivateRecipeApiTest(TestCase):
             time_minutes=5, price=5.01)
 
         recipe.tags.add(sample_tag(user=self.user))
-        recipe.ingredients.add(sample_Ingredient(user=self.user))
+        recipe.ingredients.add(sample_ingredient(user=self.user))
         
         url = detail_url(recipe.id)
         res = self.client.get(url)
 
         serializer = RecipeDetailSerializer(recipe)
         self.assertEqual(res.data['id'], serializer.data['id'])
+
+    def test_create_recipe(self):
+         """Test Creating recipe"""
+         payload = {
+             'title': 'Chocolate cake',
+             'time_minutes': 30,
+             'price': 5.01,
+         }
+         res = self.client.post(RECIPE_URL, payload)
+
+         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+         recipe = Recipe.objects.get(id=res.data['id'])
+         for key in payload.keys():
+             if key == 'title':
+                 self.assertEqual(payload[key], getattr(recipe, key))
+                
+    def test_create_recipe_with_tags(self):
+        tag1 = sample_tag(user=self.user)
+        tag2 = sample_tag(user=self.user, name='dessert')
+
+        payload = {
+             'title': 'Chocolate cake',
+             'time_minutes': 30,
+             'price': 5.00,
+             'tags': [tag1.id, tag2.id],
+         }
+        res = self.client.post(RECIPE_URL, payload)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        recipe = Recipe.objects.get(id=res.data['id'])
+        tags = recipe.tags.all()
+        self.assertIn(tag1, tags)
+        self.assertIn(tag2, tags)
+
+    def test_create_recipe_with_ingredients(self):
+        ingredient1 = sample_ingredient(user=self.user, name='sugger')
+        ingredient2 = sample_ingredient(user=self.user, name="win")
+
+        payload = {
+             'title': 'Chocolate cake',
+             'time_minutes': 30,
+             'price': 5.00,
+             'ingredients': [ingredient1.id, ingredient2.id],
+        }
+
+        res = self.client.post(RECIPE_URL, payload)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        recipe = Recipe.objects.get(id=res.data['id'])
+        ingredients = recipe.ingredients.all()
+        self.assertIn(ingredient1, ingredients)
+        self.assertIn(ingredient2, ingredients)
 
 class PublicRecipeApiTests(TestCase):
     """Test unauthentivated recipe API access"""
@@ -103,3 +154,4 @@ class PublicRecipeApiTests(TestCase):
         """Test that authentication is required"""
         res = self.client.get(RECIPE_URL)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+       
