@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-import decimal
 
 
 from rest_framework import status
@@ -111,7 +110,7 @@ class PrivateRecipeApiTest(TestCase):
                 
     def test_create_recipe_with_tags(self):
         tag1 = sample_tag(user=self.user)
-        tag2 = sample_tag(user=self.user, name='dessert')
+        tag2 = sample_tag(user=self.user, name='main dish')
 
         payload = {
              'title': 'Chocolate cake',
@@ -143,6 +142,54 @@ class PrivateRecipeApiTest(TestCase):
         ingredients = recipe.ingredients.all()
         self.assertIn(ingredient1, ingredients)
         self.assertIn(ingredient2, ingredients)
+    
+    def test_update_partly_recipe(self):
+        recipe = Recipe.objects.create(
+            user=self.user,
+            title='Chocolate cake',
+            time_minutes=30,
+            price=5.01,
+        )
+        recipe.tags.add(sample_tag(user=self.user))
+
+        tag1 = sample_tag(user=self.user, name='dessert')
+
+        payload = {
+             'title': 'Steak and mushroo sauce',
+             'tags': [tag1.id],
+        }
+        url = detail_url(recipe.id)
+        self.client.patch(url, payload)
+        recipe.refresh_from_db()
+        self.assertEqual(payload['title'], recipe.title)
+        tags = recipe.tags.all()
+        self.assertEqual(len(tags), 1)
+        self.assertEqual(tags, tag1)
+
+    def test_update_recipe(self):
+        recipe = Recipe.objects.create(
+            user=self.user,
+            title='Chocolate cake',
+            time_minutes=30,
+            price=5.01,
+        )
+
+        tag1 = sample_tag(self.user, name='main dish')
+        payload = {
+             'title': 'Steak and mushroo sauce',
+             'time_minutes': 40,
+             'price': 15.00,
+             'tags': [tag1.id],
+        }
+
+        url = detail_url(recipe.id)
+        self.client.put(url, payload)
+        recipe.refresh_from_db()
+
+        self.assertEqual(recipe.title, payload['title'])
+        tags = recipe.tags.all()
+        self.assertEqual(len(tags), 1)
+        self.assertEqual(tags, tag1)
 
 class PublicRecipeApiTests(TestCase):
     """Test unauthentivated recipe API access"""
